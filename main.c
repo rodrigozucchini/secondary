@@ -62,11 +62,10 @@ int menuPrincipal() {
                 break;
             case 2:
                 printf(GREEN"Seleccionaste Agregar Cliente\n");
-                agregarDatos();
+                agregarCliente();
                 break;
             case 3:
                 printf(GREEN"Seleccionaste Modificar Cliente\n");
-                modificarDatos();
                 break;
             case 4:
                 printf(GREEN"Seleccionaste Eliminar Clientes O Eliminar Todo\n");
@@ -105,7 +104,7 @@ int eliminarDatos() {
 	
 	switch(opcionEliminar) {
             case 1:
-                eliminarUsuarioYSuTelefono();
+                eliminarUsuario();
                 break;
             case 8:
                 eliminarTodo();
