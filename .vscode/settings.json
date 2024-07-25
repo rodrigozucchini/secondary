@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "comun.h": "c",
+        "abm.h": "c"
+    }
+}

@@ -1,212 +1,79 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <listarClientes.h>
+#include <abm.h>
 
-// DEFINICION DE COLORES PARA USAR
-#define RED     "\x1b[31m"
-#define GREEN   "\x1b[32m"
-#define YELLOW  "\x1b[33m"
-#define BLUE    "\x1b[34m"
-
-#define MAX_CLIENTES 1000
-
-// 
-// Estructura para representar un cliente
-typedef struct {
-    int id;
-    char nombres[50];
-    int dni;
-    int telefono;
-} Cliente;
-
-
-int menuPrincipal();
-void busquedaClientes();
+void convertirAMayusculas(char *cadena);
 void agregarCliente();
-int obtenerUltimoIDCliente();
+void listarClientes();
+void listarClientesAZ();
+void listarClientesZA();
+void buscarClientesPorCriterio();
+void modificarCliente();
 int eliminarDatos();
-void eliminarTodo();
-void eliminarUsuario();
+void menuPrincipal();
 
-
-int main()
-{	
-	menuPrincipal();
-	return 0;
+int main() {
+    menuPrincipal();
+    return 0;
 }
 
-int menuPrincipal() {
-	int opcionPrincipal; 
-    
+void menuPrincipal() {
+    int opcionPrincipal;
+
     do {
-        printf(YELLOW"Hola bienvenido a tu listador de contacto de clientes");
-        printf("\n");
+        printf("Hola, bienvenido a tu listador de contacto de clientes\n");
         printf(
-        "En este momento vas a poder realizar acciones en la aplicacion\n"
-        "\n"
-        "OPCIONES DE MENU\n"
-        GREEN"PRESIONANDO 1 VAS A VER CLIENTE Y SU TELEFONO\n"
-        GREEN"PRESIONANDO 2 VAS A AGREGAR UN CLIENTE Y SU TELEFONO\n"
-        GREEN"PRESIONANDO 3 VAS A MODIFICAR UN CLIENTE Y SU TELEFONO\n"
-        GREEN"PRESIONANDO 4 VAS A ELIMINAR TODO O UN CLIENTE Y SU TELEFONO\n"
-        "\n"
-        RED"PRESIONANDO ESCAPE O ESC SALES DEL PROGRAMA\n"
-        YELLOW"\n"
+            "\nOPCIONES DE MENU\n"
+            "1. Ver todos los clientes y su telefono por orden de insercion\n"
+            "2. Ver todos los clientes y su telefono ordenados A-Z por su nombre\n"
+            "3. Ver todos los clientes y su telefono ordenados Z-A por su nombre\n"
+            "4. Buscar clientes por DNI, nombre o telefono\n"
+            "5. Agregar un cliente y su telefono\n"
+            "6. Modificar un cliente y su telefono\n"
+            "7. Eliminar un cliente o eliminar todo\n"
+            "10. Salir del programa\n"
         );
-        
-        scanf("%d", &opcionPrincipal);
-        
-         switch(opcionPrincipal) {
+
+        printf("Seleccione una opcion: ");
+        if (scanf("%d", &opcionPrincipal) != 1) {
+            printf("Opcion no valida, por favor ingrese un numero.\n");
+            while (getchar() != '\n');
+            continue;
+        }
+
+        while (getchar() != '\n');
+
+        switch (opcionPrincipal) {
             case 1:
-                printf(GREEN"Seleccionaste Mostrar Clientes\n");
-                busquedaClientes();
+                listarClientes();
                 break;
             case 2:
-                printf(GREEN"Seleccionaste Agregar Cliente\n");
-                agregarCliente();
+                listarClientesAZ();
                 break;
             case 3:
-                printf(GREEN"Seleccionaste Modificar Cliente\n");
+                listarClientesZA();
                 break;
             case 4:
-                printf(GREEN"Seleccionaste Eliminar Clientes O Eliminar Todo\n");
+                buscarClientesPorCriterio();
+                break;
+            case 5:
+                agregarCliente();
+                break;
+            case 6:
+                modificarCliente();
+                break;
+            case 7:
                 eliminarDatos();
                 break;
-            case 27:
-                printf(RED"Seleccionaste Salir\n");
+            case 10:
+                printf("Saliendo del programa...\n");
                 break;
             default:
-                printf("Opcion no valida, por favor seleccione la opciones que muestra el menu\n");
-                printf("\n");
+                printf("Opcion no valida, por favor seleccione una opción del menu.\n");
                 break;
         }
-    } while (opcionPrincipal != 27);
-    
-    return opcionPrincipal;
-}
-
-
-int eliminarDatos() {
-	int opcionEliminar;
-	
-	printf("\n");
-	printf(
-	YELLOW"En este momento vas a poder realizar acciones de eliminacion\n"
-	"\n"
-	YELLOW"OPCIONES DE MENU\n"
-	GREEN"PRESIONANDO 1 ELIMINAR UN CLIENTE\n"
-	"\n"
-	RED"PRESIONANDO 8 ELIMINAS TODO\n"
-	RED"PRESIONANDO 9 VAS AL MENU PRINCIPAL\n"
-	RED"PRESIONANDO ESCAPE O ESC SALES DEL PROGRAMA\n"
-	YELLOW"\n"
-	);
-	scanf("%d", &opcionEliminar);
-	
-	switch(opcionEliminar) {
-            case 1:
-                eliminarUsuario();
-                break;
-            case 8:
-                eliminarTodo();
-                break;
-            default:
-                printf("Opcion no valida, por favor seleccione la opciones que muestra el menu\n");
-                printf("\n");
-                break;
-        }
-
-	return opcionEliminar;
-}
-
-// BUSQUEDA
-
-void busquedaClientes() {
-    FILE *clientesFile = fopen("clientes.bin", "rb");
-    if (clientesFile == NULL) {
-        printf("Error al abrir el archivo de clientes.\n");
-        return;
-    }
-
-    Cliente cliente;
-
-    printf("Clientes:\n");
-    while (fread(&cliente, sizeof(Cliente), 1, clientesFile) == 1) {
-        printf("ID Cliente: %d, Nombre: %s, DNI: %d, Telefono: %d\n", cliente.id, cliente.nombres, cliente.dni, cliente.telefono);
-    }
-    fclose(clientesFile);
-}
-
-
-int obtenerUltimoIDCliente() {
-    FILE *clientesFile = fopen("clientes.bin", "rb");
-    if (clientesFile == NULL) {
-        return 0; 
-    }
-
-    fseek(clientesFile, -sizeof(Cliente), SEEK_END); 
-    Cliente ultimoCliente;
-    fread(&ultimoCliente, sizeof(Cliente), 1, clientesFile);
-    fclose(clientesFile);
-
-    return ultimoCliente.id;
-}
-
-
-void agregarCliente() {
-
-    Cliente nuevoCliente;
-    nuevoCliente.id = obtenerUltimoIDCliente() + 1; 
-    printf("Ingrese el nombre del cliente: ");
-    scanf(" %[^\n]", nuevoCliente.nombres);
-    printf("Ingrese el DNI del cliente: ");
-    scanf("%d", &nuevoCliente.dni);
-    printf("Ingrese el telefono: ");
-    scanf("%d", &nuevoCliente.telefono);
-
-    // Verificar si el cliente ya existe
-    FILE *clientesFile = fopen("clientes.bin", "rb");
-    if (clientesFile != NULL) {
-        Cliente clienteExistente;
-        while (fread(&clienteExistente, sizeof(Cliente), 1, clientesFile) == 1) {
-            if (strcmp(clienteExistente.nombres, nuevoCliente.nombres) == 0 && clienteExistente.dni == nuevoCliente.dni) {
-                printf("El cliente ya existe en el sistema.\n");
-                fclose(clientesFile);
-                return;
-            }
-        }
-        fclose(clientesFile);
-    }
-
-
-
-    clientesFile = fopen("clientes.bin", "ab");
-    if (clientesFile == NULL) {
-        printf("Error al abrir el archivo de clientes.\n");
-        return;
-    }
-
-
-
-    fwrite(&nuevoCliente, sizeof(Cliente), 1, clientesFile);
-
-
-    fclose(clientesFile);
-
-
-    printf("Cliente y telefono agregados correctamente.\n");
-     menuPrincipal();
-}
-
-
-
-void eliminarTodo() {
-    if (remove("clientes.bin") != 0) {
-        printf("Error al eliminar el archivo de clientes.\n");
-    }
-
-    printf("Todos los archivos de la base de datos han sido eliminados.\n");
-}
-
-void eliminarUsuario() {
-
+    } while (opcionPrincipal != 10);
 }
