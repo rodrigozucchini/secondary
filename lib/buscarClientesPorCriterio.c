@@ -5,8 +5,8 @@
 #include "../includes/abm.h"
 
 void buscarClientesPorCriterio() {
-    char criterio[MAX_CLIENTES];
-    char valor[MAX_CLIENTES];
+    char criterio[50];
+    char valor[50];
     int found = 0;
 
     printf("Ingrese el criterio de busqueda (nombre, DNI o telefono): ");

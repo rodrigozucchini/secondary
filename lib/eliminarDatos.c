@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include "../includes/comun.h"
 #include "../includes/abm.h"
 
@@ -41,10 +42,10 @@ int eliminarDatos() {
 
 void eliminarUsuario() {
     char dni[50];
-    int found = 0;
+    int encontrado = 0;
 
     printf("Ingrese el DNI del cliente a eliminar: ");
-    scanf("%49s", dni);
+    scanf("%s", dni);
     convertirAMayusculas(dni);
 
     FILE *clientesFile = fopen("clientes.bin", "rb");
@@ -53,36 +54,51 @@ void eliminarUsuario() {
         return;
     }
 
-    Cliente clientes[MAX_CLIENTES];
-    int count = 0;
+    // Inicializar variables para manejo de memoria dinámica
+    Cliente *clientes = NULL;
+    size_t capacidad = 0;
+    size_t cantidad = 0;
+    size_t incremento = 10; // Incremento de la capacidad del buffer
 
-    while (fread(&clientes[count], sizeof(Cliente), 1, clientesFile) == 1) {
-        count++;
+    Cliente cliente;
+    while (fread(&cliente, sizeof(Cliente), 1, clientesFile) == 1) {
+        // Redimensionar el buffer si es necesario
+        if (cantidad >= capacidad) {
+            capacidad += incremento;
+            clientes = realloc(clientes, capacidad * sizeof(Cliente));
+            if (clientes == NULL) {
+                printf("Error de memoria.\n");
+                fclose(clientesFile);
+                return;
+            }
+        }
+        clientes[cantidad++] = cliente;
     }
     fclose(clientesFile);
 
-    FILE *tempFile = fopen("temp.bin", "wb");
-    if (tempFile == NULL) {
-        printf("Error al abrir el archivo temporal.\n");
+    // Reabrir el archivo en modo de escritura para sobrescribir los datos
+    FILE *clientesFileWrite = fopen("clientes.bin", "wb");
+    if (clientesFileWrite == NULL) {
+        printf("Error al abrir el archivo de clientes para escritura.\n");
+        free(clientes);
         return;
     }
 
-    for (int i = 0; i < count; i++) {
+    // Escribir solo los clientes que no sean el que se va a eliminar
+    for (size_t i = 0; i < cantidad; i++) {
         if (strcmp(clientes[i].dni, dni) != 0) {
-            fwrite(&clientes[i], sizeof(Cliente), 1, tempFile);
+            fwrite(&clientes[i], sizeof(Cliente), 1, clientesFileWrite);
         } else {
-            found = 1;
+            encontrado = 1;
         }
     }
-    fclose(tempFile);
+    fclose(clientesFileWrite);
+    free(clientes);
 
-    remove("clientes.bin");
-    rename("temp.bin", "clientes.bin");
-
-    if (found) {
+    if (encontrado) {
         printf("Cliente eliminado correctamente.\n");
     } else {
-        printf("No se encontro un cliente con el DNI proporcionado.\n");
+        printf("No se encontró un cliente con el DNI proporcionado.\n");
     }
 }
 

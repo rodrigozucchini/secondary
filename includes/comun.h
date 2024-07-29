@@ -1,8 +1,6 @@
 #ifndef COMUN_H
 #define COMUN_H
 
-#define MAX_CLIENTES 1000
-
 typedef struct {
     int id;
     char nombres[50];

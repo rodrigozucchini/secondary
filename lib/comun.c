@@ -4,7 +4,7 @@
 
 void convertirAMayusculas(char *cadena) {
     while (*cadena) {
-        *cadena = toupper((unsigned char)*cadena);
+        *cadena = toupper(*cadena);
         cadena++;
     }
 }

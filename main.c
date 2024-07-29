@@ -44,7 +44,6 @@ void menuPrincipal() {
             continue;
         }
 
-        while (getchar() != '\n');
 
         switch (opcionPrincipal) {
             case 1:
